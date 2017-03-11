@@ -469,6 +469,10 @@ def parse_section(name, source):
 
 def formal_usage(section):
     _, _, section = section.partition(':')  # drop "usage:"
+
+    # remove optional comments from end of each line
+    section = '\n'.join(line.split('#')[0] for line in section.split('\n'))
+
     pu = section.split()
     return '( ' + ' '.join(') | (' if s == pu[0] else s for s in pu[1:]) + ' )'
 
@@ -524,8 +528,8 @@ def docopt(doc, argv=None, help=True, version=None, options_first=False):
     >>> from docopt import docopt
     >>> doc = '''
     ... Usage:
-    ...     my_program tcp <host> <port> [--timeout=<seconds>]
-    ...     my_program serial <port> [--baud=<n>] [--timeout=<seconds>]
+    ...     my_program tcp <host> <port> [--timeout=<seconds>]           # connect via tcp
+    ...     my_program serial <port> [--baud=<n>] [--timeout=<seconds>]  # connect via serial port
     ...     my_program (-h | --help | --version)
     ...
     ... Options:
