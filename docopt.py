@@ -467,11 +467,12 @@ def parse_section(name, source):
     return [s.strip() for s in pattern.findall(source)]
 
 
-def formal_usage(section):
+def formal_usage(section, comment_delimiter=None):
     _, _, section = section.partition(':')  # drop "usage:"
 
-    # remove optional comments from end of each line
-    section = '\n'.join(line.split('#')[0] for line in section.split('\n'))
+    if (comment_delimiter != None):
+        # remove optional comments from end of each line
+        section = '\n'.join(line.split(comment_delimiter, 1)[0] for line in section.split('\n'))
 
     pu = section.split()
     return '( ' + ' '.join(') | (' if s == pu[0] else s for s in pu[1:]) + ' )'
@@ -491,7 +492,7 @@ class Dict(dict):
         return '{%s}' % ',\n '.join('%r: %r' % i for i in sorted(self.items()))
 
 
-def docopt(doc, argv=None, help=True, version=None, options_first=False):
+def docopt(doc, argv=None, help=True, version=None, options_first=False, comment_delimiter=None):
     """Parse `argv` based on command-line interface described in `doc`.
 
     `docopt` creates your command-line interface based on its
@@ -515,6 +516,8 @@ def docopt(doc, argv=None, help=True, version=None, options_first=False):
     options_first : bool (default: False)
         Set to True to require options precede positional arguments,
         i.e. to forbid options and positional arguments intermix.
+    comment_delimiter : string (default: None)
+        allow comments at end of each line in Usage string (after comment_delimiter)
 
     Returns
     -------
@@ -564,7 +567,7 @@ def docopt(doc, argv=None, help=True, version=None, options_first=False):
     DocoptExit.usage = usage_sections[0]
 
     options = parse_defaults(doc)
-    pattern = parse_pattern(formal_usage(DocoptExit.usage), options)
+    pattern = parse_pattern(formal_usage(DocoptExit.usage, comment_delimiter), options)
     # [default] syntax for argument is disabled
     #for a in pattern.flat(Argument):
     #    same_name = [d for d in arguments if d.name == a.name]
